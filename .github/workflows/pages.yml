@@ -4,24 +4,28 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # リポジトリをチェックアウト
-      - uses: actions/checkout@v3
+      # 1. リポジトリをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      # Rust のセットアップ
-      - uses: actions-rs/toolchain@v1
+      # 2. Rust 環境セットアップ
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-          components: rustfmt
+          components: rustfmt, clippy
 
-      # 依存キャッシュ
-      - uses: actions/cache@v3
+      # 3. 依存関係キャッシュ
+      - name: Cache Cargo registry
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -30,19 +34,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      # ffmml_gui をビルド（wasm 含む場合）
+      # 4. Rust ワークスペースビルド
       - name: Build ffmml_gui
         run: |
           cd ffmml_gui
           cargo build --release --features wasm
           # wasm の成果物を web/ にコピー
+          mkdir -p ../web
           cp target/wasm32-unknown-unknown/release/ffmml_gui.wasm ../web/
 
-      # GitHub Pages にデプロイ
-      - uses: actions/configure-pages@v3
+      # 5. GitHub Pages の設定
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v1
+      # 6. web/ を artifact としてアップロード
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
           path: web
 
-      - uses: actions/deploy-pages@v1
+      # 7. GitHub Pages にデプロイ
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
