@@ -42,9 +42,11 @@ jobs:
       - name: Build ffmml_gui
         run: |
           cd ffmml_gui
-          cargo build --release --target wasm32-unknown-unknown --features wasm
+          echo "Building ffmml_gui..."
+          cargo build --release --target wasm32-unknown-unknown --features wasm || { echo "Build failed"; exit 1; }
           mkdir -p ../web
           cp target/wasm32-unknown-unknown/release/ffmml_gui.wasm ../web/
+          echo "Build succeeded"
 
       # 6. GitHub Pages の設定
       - name: Configure GitHub Pages
