@@ -1,63 +1,53 @@
-name: Build and Deploy to Pages
+name: Build and Deploy ffmml.wasm
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. リポジトリをチェックアウト
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v3
 
-      # 2. Rust 環境セットアップ
-      - name: Setup Rust
+      - name: Setup Rust stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          target: wasm32-unknown-unknown
           override: true
-          components: rustfmt, clippy
 
-      # 3. wasm ターゲットを追加
-      - name: Add wasm target
-        run: rustup target add wasm32-unknown-unknown
+      - name: Install wasm-bindgen-cli
+        run: cargo install -f wasm-bindgen-cli
 
-      # 4. 依存関係キャッシュ
-      - name: Cache Cargo registry
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      # 5. Rust ワークスペースビルド（feature 指定なし）
-      - name: Build ffmml_gui
+      - name: Build ffmml_gui as wasm
         run: |
-          cd ffmml_gui
-          echo "Building ffmml_gui..."
-          cargo build --release --target wasm32-unknown-unknown || { echo "Build failed"; exit 1; }
-          mkdir -p ../web
-          cp target/wasm32-unknown-unknown/release/ffmml_gui.wasm ../web/
-          echo "Build succeeded"
+          cargo build --release --target wasm32-unknown-unknown -p ffmml_gui
 
-      # 6. GitHub Pages の設定
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+      - name: Prepare static files
+        run: |
+          mkdir -p _site
+          cp target/wasm32-unknown-unknown/release/ffmml_gui.wasm _site/ffmml.wasm
+          cp web/index.html _site/
+          cp web/primer.css _site/
+          cp web/manifest.json _site/
+          cp web/*.png _site/
+          sed -e "s/CACHE_NAME = .*;/CACHE_NAME = 'ffmml-$(git rev-parse --short HEAD)';/" web/service-worker.js > _site/service-worker.js
 
-      # 7. web/ を artifact としてアップロード
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: web
+          path: _site
 
-      # 8. GitHub Pages にデプロイ
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
