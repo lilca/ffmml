@@ -23,7 +23,11 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      # 3. 依存関係キャッシュ
+      # 3. wasm ターゲットを追加
+      - name: Add wasm target
+        run: rustup target add wasm32-unknown-unknown
+
+      # 4. 依存関係キャッシュ
       - name: Cache Cargo registry
         uses: actions/cache@v3
         with:
@@ -34,25 +38,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      # 4. Rust ワークスペースビルド
+      # 5. Rust ワークスペースビルド（wasm 含む）
       - name: Build ffmml_gui
         run: |
           cd ffmml_gui
-          cargo build --release --features wasm
-          # wasm の成果物を web/ にコピー
+          cargo build --release --target wasm32-unknown-unknown --features wasm
           mkdir -p ../web
           cp target/wasm32-unknown-unknown/release/ffmml_gui.wasm ../web/
 
-      # 5. GitHub Pages の設定
+      # 6. GitHub Pages の設定
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      # 6. web/ を artifact としてアップロード
+      # 7. web/ を artifact としてアップロード
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: web
 
-      # 7. GitHub Pages にデプロイ
+      # 8. GitHub Pages にデプロイ
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
