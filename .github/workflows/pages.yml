@@ -38,12 +38,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      # 5. Rust ワークスペースビルド（wasm 含む）
+      # 5. Rust ワークスペースビルド（feature 指定なし）
       - name: Build ffmml_gui
         run: |
           cd ffmml_gui
           echo "Building ffmml_gui..."
-          cargo build --release --target wasm32-unknown-unknown --features wasm || { echo "Build failed"; exit 1; }
+          cargo build --release --target wasm32-unknown-unknown || { echo "Build failed"; exit 1; }
           mkdir -p ../web
           cp target/wasm32-unknown-unknown/release/ffmml_gui.wasm ../web/
           echo "Build succeeded"
