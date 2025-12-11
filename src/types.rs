@@ -574,7 +574,7 @@ impl NthFrameItem for NoteEnvelope {
         let mut v: i8 = 0;
         for i in 0..frame_index {
             if i < self.envelope.items.len() || self.envelope.loop_point.is_some() {
-                v = v.saturating_add(self.envelope.nth_frame_item(frame_index).get() as i8);
+                v = v.saturating_add(self.envelope.nth_frame_item(i).get() as i8);
             }
         }
         v
