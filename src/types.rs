@@ -141,15 +141,14 @@ pub struct Note {
 }
 
 impl Note {
-    pub fn from_semitone_from_c(n: u8) -> Self {
-        debug_assert!(n < 12);
+    pub fn from_semitone_internal(n: u8) -> Self {
+        let pos = Position::new(0);
 
-        // C を基準に +n した Note を作る
         let mut note = Note {
-            start: Position::dummy(),
+            start: pos,
             letter: Letter::C,
             accidentals: n as i8,
-            end: Position::dummy(),
+            end: pos,
         };
 
         let (letter, has_sharp) = note.normalize();
@@ -382,18 +381,18 @@ impl Octave {
     }
 
     pub fn add(self, note: Note, delta: i8) -> (i8, i8) {
-        let newNote = self.to_abs(note) + delta as i32
+        let newNote = self.to_abs(note) + delta as i32;
         if newNote < 0 {
-            return (0 , 2)
+            return (0 , 2);
         }
-        let newOctave = newNote / 12
+        let newOctave = newNote / 12;
         if newOctave < 2 {
-            return (0 , 2)
+            return (0 , 2);
         }
         if newOctave > 7 {
-            return (11, 7)
+            return (11, 7);
         }
-        return ((newNote % 12) as i8, newOctave as i8)
+        return ((newNote % 12) as i8, newOctave as i8);
     }
 
     pub fn to_abs(self, note: Note) -> i32 {
