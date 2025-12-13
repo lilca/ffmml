@@ -358,7 +358,22 @@ impl Octave {
             None
         }
     }
-    
+
+    pub fn add(self, note: Note, delta: i8) -> (i8, i8) {
+        let newNote = self.to_abs(note) + delta as i32
+        if newNote < 0 {
+            return (0 , 2)
+        }
+        let newOctave = newNote / 12
+        if newOctave < 2 {
+            return (0 , 2)
+        }
+        if newOctave > 7 {
+            return (11, 7)
+        }
+        return ((newNote % 12) as i8, newOctave as i8)
+    }
+
     pub fn to_abs(self, note: Note) -> i32 {
         self.get() as i32 * 12 + note.offset_from_c() as i32
     }
