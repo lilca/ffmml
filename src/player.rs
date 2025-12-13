@@ -253,10 +253,10 @@ impl ChannelPlayer {
         let mut octave = self.octave;
 
         if let Some(arpeggio) = &self.arpeggio {
-            let delta = arpeggio.nth_frame_item(frame_index)
-            let result = octave.add(note, delta)
-            note = result.0
-            octave = result.1
+            let delta = arpeggio.nth_frame_item(frame_index);
+            let result = octave.add(note, delta);
+            note = result.0;
+            octave = result.1;
         };
     
         if let Some((Some(speed), Some(depth))) = self.pitch_sweep.map(|s| (s.speed(), s.depth())) {
