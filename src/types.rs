@@ -380,19 +380,19 @@ impl Octave {
         }
     }
 
-    pub fn add(self, note: Note, delta: i8) -> (i8, i8) {
+    pub fn add(self, note: Note, delta: i8) -> (Note, Octave) {
         let newNote = self.to_abs(note) + delta as i32;
         if newNote < 0 {
-            return (0 , 2);
+            return (Note.from_semitone_internal(0) , Octavle.from_u8_clamped(2));
         }
         let newOctave = newNote / 12;
         if newOctave < 2 {
-            return (0 , 2);
+            return (Note.from_semitone_internal(0) , Octave.from_u8_clamped(2));
         }
         if newOctave > 7 {
-            return (11, 7);
+            return (Note.from_semitone_internal(11), Octave.from_u8_clamped(7));
         }
-        return ((newNote % 12) as i8, newOctave as i8);
+        return (Note.from_semitone_internal((newNote % 12) as u8), Octave.from_u8_clamped(newOctave as u8));
     }
 
     pub fn to_abs(self, note: Note) -> i32 {
