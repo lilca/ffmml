@@ -358,6 +358,10 @@ impl Octave {
             None
         }
     }
+    
+    pub fn to_abs(self, note: Note) -> i32 {
+        self.get() as i32 * 12 + note.offset_from_c() as i32
+    }
 }
 
 impl Default for Octave {
