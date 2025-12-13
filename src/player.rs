@@ -253,19 +253,12 @@ impl ChannelPlayer {
         let mut octave = self.octave;
 
         if let Some(arpeggio) = &self.arpeggio {
-            let result = note.apply_note_number_delta(arpeggio.nth_frame_item(frame_index));
-            note = result.0;
-            if result.1 < 0 {
-                octave = octave
-                    .checked_sub(result.1.unsigned_abs())
-                    .ok_or_else(|| PlayMusicError::new(note, "octave underflow"))?;
-            } else {
-                octave = octave
-                    .checked_add(result.1 as u8)
-                    .ok_or_else(|| PlayMusicError::new(note, "octave overflow"))?;
-            };
+            let delta = arpeggio.nth_frame_item(frame_index)
+            let result = octave.add(note, delta)
+            note = result.0
+            octave = result.1
         };
-
+    
         if let Some((Some(speed), Some(depth))) = self.pitch_sweep.map(|s| (s.speed(), s.depth())) {
             if frame_index == 0 {
                 self.oscillator.set_frequency(note, octave, detune);
