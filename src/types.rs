@@ -141,6 +141,23 @@ pub struct Note {
 }
 
 impl Note {
+    pub fn from_semitone_from_c(n: u8) -> Self {
+        debug_assert!(n < 12);
+
+        // C を基準に +n した Note を作る
+        let mut note = Note {
+            start: Position::dummy(),
+            letter: Letter::C,
+            accidentals: n as i8,
+            end: Position::dummy(),
+        };
+
+        let (letter, has_sharp) = note.normalize();
+        note.letter = letter;
+        note.accidentals = has_sharp as i8;
+        note
+    }
+    
     pub const fn letter(self) -> Letter {
         self.letter
     }
@@ -339,6 +356,11 @@ impl<const MIN: i32, const MAX: i32> Parse for Int<MIN, MAX> {
 pub struct Octave(Int<2, 7>);
 
 impl Octave {
+    pub fn from_u8_clamped(v: u8) -> Self {
+        let v = v.clamp(2, 7);
+        Self(Int::new(v as i32))
+    }
+    
     pub const fn get(self) -> u8 {
         self.0.get() as u8
     }
